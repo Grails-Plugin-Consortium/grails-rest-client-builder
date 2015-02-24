@@ -25,180 +25,180 @@ class RestBuilderSpec extends Specification {
 
 
     def "Test proxy configuration"() {
-        when:"RestBuilder is configured with proxy settings"
-            def rest = new RestBuilder(proxy:['localhost':8888])
-            def proxyAddress = rest.restTemplate.requestFactory?.@proxy?.address()
+        when: "RestBuilder is configured with proxy settings"
+        def rest = new RestBuilder(proxy: ['localhost': 8888])
+        def proxyAddress = rest.restTemplate.requestFactory?.@proxy?.address()
 
-        then:"The proxy settings are correct"
-            proxyAddress != null
-            proxyAddress.hostName == "localhost"
-            proxyAddress.port == 8888
+        then: "The proxy settings are correct"
+        proxyAddress != null
+        proxyAddress.hostName == "localhost"
+        proxyAddress.port == 8888
     }
 
-    def "Test that a basic GET request returns a JSON result of the response type is JSON"(){
-        given:"A rest client instance"
-            def rest = new RestBuilder()
-            final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
-            mockServer.expect(requestTo("http://grails.org/api/v1.0/plugin/acegi/"))
-                       .andExpect(method(HttpMethod.GET))
-                       .andExpect(header(HttpHeaders.ACCEPT, "application/json"))
-                        .andRespond(withSuccess('{"name":"acegi"}', MediaType.APPLICATION_JSON))
+    def "Test that a basic GET request returns a JSON result of the response type is JSON"() {
+        given: "A rest client instance"
+        def rest = new RestBuilder()
+        final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
+        mockServer.expect(requestTo("http://grails.org/api/v1.0/plugin/acegi/"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header(HttpHeaders.ACCEPT, "application/json"))
+                .andRespond(withSuccess('{"name":"acegi"}', MediaType.APPLICATION_JSON))
 
 
-        when:"A get request is issued for a response that returns XML"
-            def resp = rest.get("http://grails.org/api/v1.0/plugin/acegi/") {
-                accept "application/json"
-            }
+        when: "A get request is issued for a response that returns XML"
+        def resp = rest.get("http://grails.org/api/v1.0/plugin/acegi/") {
+            accept "application/json"
+        }
 
-        then:"The response is a gpath result"
-            mockServer.verify()
-            resp != null
-            resp.json instanceof JSONObject
-            resp.json.name == 'acegi'
+        then: "The response is a gpath result"
+        mockServer.verify()
+        resp != null
+        resp.json instanceof JSONObject
+        resp.json.name == 'acegi'
     }
 
-    def "Test that a basic GET request returns a JSON result of the response type is JSON and accept JSON is passed"(){
-        given:"A rest client instance"
-            def rest = new RestBuilder()
-            final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
-            mockServer.expect(requestTo("http://grails.org/api/v1.0/plugin/acegi/"))
-                    .andExpect(method(HttpMethod.GET))
-                    .andExpect(header(HttpHeaders.ACCEPT, "application/json"))
-                    .andRespond(withSuccess('{"name":"acegi"}', MediaType.APPLICATION_JSON))
+    def "Test that a basic GET request returns a JSON result of the response type is JSON and accept JSON is passed"() {
+        given: "A rest client instance"
+        def rest = new RestBuilder()
+        final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
+        mockServer.expect(requestTo("http://grails.org/api/v1.0/plugin/acegi/"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header(HttpHeaders.ACCEPT, "application/json"))
+                .andRespond(withSuccess('{"name":"acegi"}', MediaType.APPLICATION_JSON))
 
 
-        when:"A get request is issued for a response that returns XML"
-            def resp = rest.get("http://grails.org/api/v1.0/plugin/acegi/") {
-                accept JSON
-            }
+        when: "A get request is issued for a response that returns XML"
+        def resp = rest.get("http://grails.org/api/v1.0/plugin/acegi/") {
+            accept JSON
+        }
 
-        then:"The response is a gpath result"
-            mockServer.verify()
-            resp != null
-            resp.json instanceof JSONObject
-            resp.json.name == 'acegi'
+        then: "The response is a gpath result"
+        mockServer.verify()
+        resp != null
+        resp.json instanceof JSONObject
+        resp.json.name == 'acegi'
     }
 
     def "Test that obtaining a 404 response doesn't throw an exception but instead returns the response object for inspection"() {
-        given:"A rest client instance"
-            def rest = new RestBuilder()
-            final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
-            mockServer.expect(requestTo("http://grails.org/api/v1.0/plugin/nonsense"))
-                    .andExpect(method(HttpMethod.GET))
-                    .andExpect(header(HttpHeaders.ACCEPT, "application/xml"))
-                    .andRespond(withStatus(HttpStatus.NOT_FOUND))
+        given: "A rest client instance"
+        def rest = new RestBuilder()
+        final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
+        mockServer.expect(requestTo("http://grails.org/api/v1.0/plugin/nonsense"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header(HttpHeaders.ACCEPT, "application/xml"))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND))
 
-        when:"A get request is issued to a URL that returns a 404"
-            def resp = rest.get("http://grails.org/api/v1.0/plugin/nonsense") {
-                accept "application/xml"
-            }
+        when: "A get request is issued to a URL that returns a 404"
+        def resp = rest.get("http://grails.org/api/v1.0/plugin/nonsense") {
+            accept "application/xml"
+        }
 
-        then:"Check the status"
-            mockServer.verify()
-            resp.status == 404
-            resp.text instanceof String
+        then: "Check the status"
+        mockServer.verify()
+        resp.status == 404
+        resp.text instanceof String
     }
 
-    def "Test that a basic GET request returns a JSON result of the response type is JSON with custom settings"(){
-        given:"A rest client instance"
-            def rest = new RestBuilder(connectTimeout:1000, readTimeout:20000)
-            final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
-            mockServer.expect(requestTo("http://grails.org/api/v1.0/plugin/acegi/"))
-                    .andExpect(method(HttpMethod.GET))
-                    .andRespond(withSuccess('{"name":"acegi"}', MediaType.APPLICATION_JSON))
+    def "Test that a basic GET request returns a JSON result of the response type is JSON with custom settings"() {
+        given: "A rest client instance"
+        def rest = new RestBuilder(connectTimeout: 1000, readTimeout: 20000)
+        final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
+        mockServer.expect(requestTo("http://grails.org/api/v1.0/plugin/acegi/"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess('{"name":"acegi"}', MediaType.APPLICATION_JSON))
 
 
-        when:"A get request is issued for a response that returns XML"
-            def resp = rest.get("http://grails.org/api/v1.0/plugin/acegi/")
+        when: "A get request is issued for a response that returns XML"
+        def resp = rest.get("http://grails.org/api/v1.0/plugin/acegi/")
 
-        then:"The response is a gpath result"
-            mockServer.verify()
-            resp != null
-            resp.json instanceof JSONObject
-            resp.json.name == 'acegi'
+        then: "The response is a gpath result"
+        mockServer.verify()
+        resp != null
+        resp.json instanceof JSONObject
+        resp.json.name == 'acegi'
     }
 
-    def "Test that a basic GET request returns a XML result of the response type is XML"(){
-        given:"A rest client instance"
-            def rest = new RestBuilder()
-            final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
-            mockServer.expect(requestTo("http://grails.org/api/v1.0/plugin/acegi/"))
-                    .andExpect(method(HttpMethod.GET))
-                    .andExpect(header(HttpHeaders.ACCEPT, "application/xml"))
-                    .andRespond(withSuccess('<plugin><name>acegi</name></plugin>', MediaType.APPLICATION_XML))
+    def "Test that a basic GET request returns a XML result of the response type is XML"() {
+        given: "A rest client instance"
+        def rest = new RestBuilder()
+        final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
+        mockServer.expect(requestTo("http://grails.org/api/v1.0/plugin/acegi/"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header(HttpHeaders.ACCEPT, "application/xml"))
+                .andRespond(withSuccess('<plugin><name>acegi</name></plugin>', MediaType.APPLICATION_XML))
 
 
-        when:"A get request is issued for a response that returns XML"
-            def resp = rest.get("http://grails.org/api/v1.0/plugin/acegi/") {
-                accept 'application/xml'
-            }
+        when: "A get request is issued for a response that returns XML"
+        def resp = rest.get("http://grails.org/api/v1.0/plugin/acegi/") {
+            accept 'application/xml'
+        }
 
-        then:"The response is a gpath result"
-            mockServer.verify()
-            resp != null
-            resp.xml instanceof GPathResult
-            resp.xml.name == 'acegi'
+        then: "The response is a gpath result"
+        mockServer.verify()
+        resp != null
+        resp.xml instanceof GPathResult
+        resp.xml.name == 'acegi'
     }
 
     def "Test basic authentication with GET request"() {
-        given:"A rest client instance"
-            def rest = new RestBuilder()
-            final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
-            mockServer.expect(requestTo("http://repo.grails.org/grails/api/security/users"))
-                    .andExpect(method(HttpMethod.GET))
-                    .andExpect(header(HttpHeaders.AUTHORIZATION, anything()))
-                    .andRespond(withSuccess('["foo", "bar"]', MediaType.APPLICATION_JSON))
+        given: "A rest client instance"
+        def rest = new RestBuilder()
+        final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
+        mockServer.expect(requestTo("http://repo.grails.org/grails/api/security/users"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header(HttpHeaders.AUTHORIZATION, anything()))
+                .andRespond(withSuccess('["foo", "bar"]', MediaType.APPLICATION_JSON))
 
 
-        when:"A get request is issued for a response that returns XML"
-            def resp = rest.get("http://repo.grails.org/grails/api/security/users"){
-                auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
-            }
+        when: "A get request is issued for a response that returns XML"
+        def resp = rest.get("http://repo.grails.org/grails/api/security/users") {
+            auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
+        }
 
-        then:"The response is a gpath result"
-            resp != null
-            resp.json instanceof JSONArray
-            mockServer.verify()
+        then: "The response is a gpath result"
+        resp != null
+        resp.json instanceof JSONArray
+        mockServer.verify()
     }
 
     def "Test basic authentication with PUT request"() {
-        given:"A rest client instance"
-            def rest = new RestBuilder()
-            MockRestServiceServer mockServer = mockArtifactoryUserGroupApi(rest)
+        given: "A rest client instance"
+        def rest = new RestBuilder()
+        MockRestServiceServer mockServer = mockArtifactoryUserGroupApi(rest)
 
 
 
-        when:"A get request is issued for a response that returns XML"
-            def resp = rest.put("http://repo.grails.org/grails/api/security/groups/test-group"){
-                auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
-                contentType "application/vnd.org.jfrog.artifactory.security.Group+json"
-                json {
-                    name = "test-group"
-                    description = "A temporary test group"
-                }
+        when: "A get request is issued for a response that returns XML"
+        def resp = rest.put("http://repo.grails.org/grails/api/security/groups/test-group") {
+            auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
+            contentType "application/vnd.org.jfrog.artifactory.security.Group+json"
+            json {
+                name = "test-group"
+                description = "A temporary test group"
             }
-        then:"The response is a gpath result"
-            resp != null
-            resp.status == 201
+        }
+        then: "The response is a gpath result"
+        resp != null
+        resp.status == 201
 
-        when:"The resource contents are requested"
-            resp = rest.get("http://repo.grails.org/grails/api/security/groups/test-group") {
-                auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
-            }
+        when: "The resource contents are requested"
+        resp = rest.get("http://repo.grails.org/grails/api/security/groups/test-group") {
+            auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
+        }
 
-        then:"The contents are valid"
-            resp != null
-            resp.json.name == 'test-group'
+        then: "The contents are valid"
+        resp != null
+        resp.json.name == 'test-group'
 
-        when:"The resource is deleted"
-            resp = rest.delete("http://repo.grails.org/grails/api/security/groups/test-group") {
-                auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
-            }
+        when: "The resource is deleted"
+        resp = rest.delete("http://repo.grails.org/grails/api/security/groups/test-group") {
+            auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
+        }
 
-        then:"The resource is gone"
-            resp != null
-            resp.status == 200
-            mockServer.verify()
+        then: "The resource is gone"
+        resp != null
+        resp.status == 200
+        mockServer.verify()
     }
 
     public static MockRestServiceServer mockArtifactoryUserGroupApi(RestBuilder rest) {
@@ -223,117 +223,115 @@ class RestBuilderSpec extends Specification {
     }
 
     def "Test basic authentication with PUT request and JSON body"() {
-        given:"A rest client instance"
-            def rest = new RestBuilder()
-            MockRestServiceServer mockServer = mockArtifactoryUserGroupApi(rest)
+        given: "A rest client instance"
+        def rest = new RestBuilder()
+        MockRestServiceServer mockServer = mockArtifactoryUserGroupApi(rest)
 
-        when:"A get request is issued for a response that returns XML"
-            def builder = new JSONBuilder()
-            JSON j = builder.build {
-                name = "test-group"
-                description = "A temporary test group"
-            }
-            def resp = rest.put("http://repo.grails.org/grails/api/security/groups/test-group"){
-                auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
-                contentType "application/vnd.org.jfrog.artifactory.security.Group+json"
-                body j
-            }
-        then:"The response is a gpath result"
-            resp != null
-            resp.status == 201
-            resp.text == "Created"
+        when: "A get request is issued for a response that returns XML"
+        def builder = new JSONBuilder()
+        JSON j = builder.build {
+            name = "test-group"
+            description = "A temporary test group"
+        }
+        def resp = rest.put("http://repo.grails.org/grails/api/security/groups/test-group") {
+            auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
+            contentType "application/vnd.org.jfrog.artifactory.security.Group+json"
+            body j
+        }
+        then: "The response is a gpath result"
+        resp != null
+        resp.status == 201
+        resp.text == "Created"
 
-        when:"The resource contents are requested"
-            resp = rest.get("http://repo.grails.org/grails/api/security/groups/test-group") {
-                auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
-            }
+        when: "The resource contents are requested"
+        resp = rest.get("http://repo.grails.org/grails/api/security/groups/test-group") {
+            auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
+        }
 
-        then:"The contents are valid"
-            resp != null
-            resp.json.name == 'test-group'
+        then: "The contents are valid"
+        resp != null
+        resp.json.name == 'test-group'
 
-        when:"The resource is deleted"
-            resp = rest.delete("http://repo.grails.org/grails/api/security/groups/test-group") {
-                auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
-            }
+        when: "The resource is deleted"
+        resp = rest.delete("http://repo.grails.org/grails/api/security/groups/test-group") {
+            auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
+        }
 
-        then:"The resource is gone"
-            resp != null
-            resp.status == 200
-            mockServer.verify()
+        then: "The resource is gone"
+        resp != null
+        resp.status == 200
+        mockServer.verify()
     }
 
     def "Test basic authentication with PUT request and JSON as map"() {
-        given:"A rest client instance"
-            def rest = new RestBuilder()
-            MockRestServiceServer mockServer = mockArtifactoryUserGroupApi(rest)
+        given: "A rest client instance"
+        def rest = new RestBuilder()
+        MockRestServiceServer mockServer = mockArtifactoryUserGroupApi(rest)
 
-        when:"A get request is issued for a response that returns XML"
-            def builder = new JSONBuilder()
-            def j = [
-                    name : "test-group",
-                    description : "A temporary test group"
-            ]
-            def resp = rest.put("http://repo.grails.org/grails/api/security/groups/test-group"){
-                auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
-                contentType "application/vnd.org.jfrog.artifactory.security.Group+json"
-                json j
-            }
-        then:"The response is a gpath result"
-            resp != null
-            resp.status == 201
-            resp.text == "Created"
+        when: "A get request is issued for a response that returns XML"
+        def builder = new JSONBuilder()
+        def j = [
+                name       : "test-group",
+                description: "A temporary test group"
+        ]
+        def resp = rest.put("http://repo.grails.org/grails/api/security/groups/test-group") {
+            auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
+            contentType "application/vnd.org.jfrog.artifactory.security.Group+json"
+            json j
+        }
+        then: "The response is a gpath result"
+        resp != null
+        resp.status == 201
+        resp.text == "Created"
 
-        when:"The resource contents are requested"
-            resp = rest.get("http://repo.grails.org/grails/api/security/groups/test-group") {
-                auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
-            }
+        when: "The resource contents are requested"
+        resp = rest.get("http://repo.grails.org/grails/api/security/groups/test-group") {
+            auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
+        }
 
-        then:"The contents are valid"
-            resp != null
-            resp.json.name == 'test-group'
+        then: "The contents are valid"
+        resp != null
+        resp.json.name == 'test-group'
 
-        when:"The resource is deleted"
-            resp = rest.delete("http://repo.grails.org/grails/api/security/groups/test-group") {
-                auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
-            }
+        when: "The resource is deleted"
+        resp = rest.delete("http://repo.grails.org/grails/api/security/groups/test-group") {
+            auth System.getProperty("artifactory.user"), System.getProperty("artifactory.pass")
+        }
 
-        then:"The resource is gone"
-            resp != null
-            resp.status == 200
-            mockServer.verify()
+        then: "The resource is gone"
+        resp != null
+        resp.status == 200
+        mockServer.verify()
     }
-
-
 
     // Note that this test uses JSON query parameters, but they are not actually validated due to the call
     //  not using them. If a call that processes JSON URL parameters if used, this test would mean much more.
     @Issue("https://github.com/grails-plugins/grails-rest-client-builder/issues/3")
     def "Test URL variables"() {
-        given:"A rest client instance"
-            def rest = new RestBuilder()
-            final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
-            mockServer.expect(requestTo("http://grails.org/api/v1.0/plugin/acegi"))
-                    .andExpect(method(HttpMethod.GET))
-                    .andExpect(header(HttpHeaders.ACCEPT, "application/json"))
-                    .andRespond(withSuccess('{"name":"acegi"}', MediaType.APPLICATION_JSON))
+        given: "A rest client instance"
+        def rest = new RestBuilder()
+        final mockServer = MockRestServiceServer.createServer(rest.restTemplate)
+        mockServer.expect(requestTo("http://grails.org/api/v1.0/plugin/acegi"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header(HttpHeaders.ACCEPT, "application/json"))
+                .andRespond(withSuccess('{"name":"acegi"}', MediaType.APPLICATION_JSON))
 
 
-        when:"A get request is issued for a response that returns XML"
-            def resp = rest.get("http://grails.org/api/v1.0/plugin/{name}", [name: 'acegi']) {
-                accept "application/json"
-            }
+        when: "A get request is issued for a response that returns XML"
+        def resp = rest.get("http://grails.org/api/v1.0/plugin/{name}", [name: 'acegi']) {
+            accept "application/json"
+        }
 
-        then:"The response is a gpath result"
-            mockServer.verify()
-            resp != null
-            resp.json instanceof JSONObject
-            resp.json.name == 'acegi'
+        then: "The response is a gpath result"
+        mockServer.verify()
+        resp != null
+        resp.json instanceof JSONObject
+        resp.json.name == 'acegi'
     }
 
     @Issue("https://github.com/grails-plugins/grails-rest-client-builder/issues/34")
     def "Test marshaling of object with new rest builder"() {
-        given:"an object with an enum and custom marshaller"
+        given: "an object with an enum and custom marshaller"
         Foo foo = new Foo(fooType: FooType.FOO)
         JSON.registerObjectMarshaller(FooType) {
             it.toString()
@@ -348,6 +346,30 @@ class RestBuilderSpec extends Specification {
         when: 'convert to json AFTER new rest builder'
         def rest = new RestBuilder()
         def json2 = [foo: foo] as JSON
+
+        then:
+        json2.toString() == '{"foo":{"fooType":"FOO"}}'
+    }
+
+    @Issue("https://github.com/grails-plugins/grails-rest-client-builder/issues/34")
+    def "Test named marshaling of object with new rest builder"() {
+        given: "an object with an enum and custom marshaller"
+        Foo foo = new Foo(fooType: FooType.FOO)
+        JSON.createNamedConfig('deep') {
+            JSON.registerObjectMarshaller(FooType) {
+                it.toString()
+            }
+        }
+
+        when: 'convert to json'
+        def json = [foo: foo] as JSON
+
+        then:
+        json.toString() == '{"foo":{"fooType":"FOO"}}'
+
+        when: 'convert to json AFTER new rest builder'
+        def rest = new RestBuilder()
+        def json2 = JSON.use('deep') { [foo: foo] as JSON }
 
         then:
         json2.toString() == '{"foo":{"fooType":"FOO"}}'
