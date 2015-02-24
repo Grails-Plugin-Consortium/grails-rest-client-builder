@@ -1,6 +1,8 @@
 package grails.plugins.rest.client
 
 import grails.converters.JSON
+import grails.test.mixin.TestMixin
+import grails.test.mixin.web.ControllerUnitTestMixin
 import grails.web.JSONBuilder
 import groovy.util.slurpersupport.GPathResult
 import org.codehaus.groovy.grails.web.json.JSONArray
@@ -18,6 +20,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess
 
+@TestMixin(ControllerUnitTestMixin)
 class RestBuilderSpec extends Specification {
 
 
@@ -327,4 +330,36 @@ class RestBuilderSpec extends Specification {
             resp.json instanceof JSONObject
             resp.json.name == 'acegi'
     }
+
+    @Issue("https://github.com/grails-plugins/grails-rest-client-builder/issues/34")
+    def "Test marshaling of object with new rest builder"() {
+        given:"an object with an enum and custom marshaller"
+        Foo foo = new Foo(fooType: FooType.FOO)
+        JSON.registerObjectMarshaller(FooType) {
+            it.toString()
+        }
+
+        when: 'convert to json'
+        def json = [foo: foo] as JSON
+
+        then:
+        json.toString() == '{"foo":{"fooType":"FOO"}}'
+
+        when: 'convert to json AFTER new rest builder'
+        def rest = new RestBuilder()
+        def json2 = [foo: foo] as JSON
+
+        then:
+        json2.toString() == '{"foo":{"fooType":"FOO"}}'
+    }
 }
+
+
+class Foo {
+    FooType fooType
+}
+
+enum FooType {
+    FOO
+}
+
