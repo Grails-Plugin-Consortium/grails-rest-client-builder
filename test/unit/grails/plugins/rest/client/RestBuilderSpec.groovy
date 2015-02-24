@@ -358,8 +358,8 @@ class RestBuilderSpec extends Specification {
     def "Test named marshaling of object with new rest builder"() {
         given: "an object with an enum and custom marshaller"
         Foo foo = new Foo(fooType: FooType.FOO)
-        JSON.createNamedConfig('deep') {
-            JSON.registerObjectMarshaller(FooType) {
+        JSON.createNamedConfig('enum') { namedConfig ->
+            namedConfig.registerObjectMarshaller(FooType) {
                 it.toString()
             }
         }
@@ -372,7 +372,7 @@ class RestBuilderSpec extends Specification {
 
         when: 'convert to json AFTER new rest builder'
         def rest = new RestBuilder()
-        def json2 = JSON.use('deep') { [foo: foo] as JSON }
+        def json2 = JSON.use('enum') { [foo: foo] as JSON }
 
         then: 'will break'
         json2.toString() == '{"foo":{"fooType":"FOO"}}'
