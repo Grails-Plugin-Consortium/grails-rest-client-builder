@@ -343,14 +343,14 @@ class RestBuilderSpec extends Specification {
         when: 'convert to json'
         def json = [foo: foo] as JSON
 
-        then:
+        then: "will pass"
         json.toString() == '{"foo":{"fooType":"FOO"}}'
 
         when: 'convert to json AFTER new rest builder'
         def rest = new RestBuilder()
         def json2 = [foo: foo] as JSON
 
-        then:
+        then: 'will break'
         json2.toString() == '{"foo":{"fooType":"FOO"}}'
     }
 
@@ -367,14 +367,14 @@ class RestBuilderSpec extends Specification {
         when: 'convert to json'
         def json = [foo: foo] as JSON
 
-        then:
+        then: "will pass"
         json.toString() == '{"foo":{"fooType":"FOO"}}'
 
         when: 'convert to json AFTER new rest builder'
         def rest = new RestBuilder()
         def json2 = JSON.use('deep') { [foo: foo] as JSON }
 
-        then:
+        then: 'will break'
         json2.toString() == '{"foo":{"fooType":"FOO"}}'
     }
 
@@ -392,7 +392,7 @@ class RestBuilderSpec extends Specification {
         def rest = new RestBuilder()
         def json2 = JSON.use('fooTypeJson') { [foo: foo] as JSON }
 
-        then:
+        then: 'will break'
         json2.toString() == '{"foo":{"fooType":"FOO"}}'
     }
 
@@ -410,7 +410,7 @@ class RestBuilderSpec extends Specification {
         def rest = new RestBuilder()
         def json2 = JSON.use('fooType') { [foo: foo] as JSON }
 
-        then:
+        then: "will pass"
         json2.toString() == '{"foo":{"fooType":"FOO"}}'
     }
 
@@ -428,7 +428,7 @@ class RestBuilderSpec extends Specification {
         def rest = new RestBuilder()
         def json2 = JSON.use('deep') { [foo: foo] as JSON }
 
-        then:
+        then: 'will break'
         json2.toString() == '{"foo":{"fooType":"FOO"}}'
     }
 
@@ -446,7 +446,7 @@ class RestBuilderSpec extends Specification {
         def rest = new RestBuilder()
         def json2 = [foo: foo] as JSON
 
-        then:
+        then: 'will break'
         json2.toString() == '{"foo":{"fooType":"FOO"}}'
     }
 
@@ -464,7 +464,20 @@ class RestBuilderSpec extends Specification {
         def rest = new RestBuilder()
         def json2 = [foo: foo] as JSON
 
-        then:
+        then: "will pass"
+        json2.toString() == '{"foo":{"fooType":"FOO"}}'
+    }
+
+    @Issue("https://github.com/grails-plugins/grails-rest-client-builder/issues/34")
+    def "Test thread local still in tact marshalling of object with new rest builder"() {
+        given: "an object with an enum and custom marshaller"
+        Foo foo = new Foo(fooType: FooType.FOO)
+
+        when: 'convert to json AFTER new rest builder'
+        def rest = new RestBuilder()
+        def json2 = [foo: foo] as JSON
+
+        then: "will pass"
         json2.toString() == '{"foo":{"fooType":"FOO"}}'
     }
 }
