@@ -5,6 +5,8 @@ import grails.test.mixin.TestMixin
 import grails.test.mixin.web.ControllerUnitTestMixin
 import grails.web.JSONBuilder
 import groovy.util.slurpersupport.GPathResult
+import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
+import org.codehaus.groovy.grails.web.converters.configuration.DefaultConverterConfiguration
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
@@ -333,6 +335,7 @@ class RestBuilderSpec extends Specification {
     def "Test marshaling of object with new rest builder"() {
         given: "an object with an enum and custom marshaller"
         Foo foo = new Foo(fooType: FooType.FOO)
+
         JSON.registerObjectMarshaller(FooType) {
             it.toString()
         }
@@ -370,6 +373,96 @@ class RestBuilderSpec extends Specification {
         when: 'convert to json AFTER new rest builder'
         def rest = new RestBuilder()
         def json2 = JSON.use('deep') { [foo: foo] as JSON }
+
+        then:
+        json2.toString() == '{"foo":{"fooType":"FOO"}}'
+    }
+
+    @Issue("https://github.com/grails-plugins/grails-rest-client-builder/issues/34")
+    def "Test named JSON marshaling of object with new rest builder"() {
+        given: "an object with an enum and custom marshaller"
+        Foo foo = new Foo(fooType: FooType.FOO)
+        JSON.createNamedConfig('fooTypeJson') {
+            JSON.registerObjectMarshaller(FooType) {
+                it.toString()
+            }
+        }
+
+        when: 'convert to json AFTER new rest builder'
+        def rest = new RestBuilder()
+        def json2 = JSON.use('fooTypeJson') { [foo: foo] as JSON }
+
+        then:
+        json2.toString() == '{"foo":{"fooType":"FOO"}}'
+    }
+
+    @Issue("https://github.com/grails-plugins/grails-rest-client-builder/issues/34")
+    def "Test DefaultConverterConfiguration named marshaling of object with new rest builder"() {
+        given: "an object with an enum and custom marshaller"
+        DefaultConverterConfiguration<JSON> fooTypeConfig = new DefaultConverterConfiguration<JSON>(ConvertersConfigurationHolder.getConverterConfiguration(JSON))
+        fooTypeConfig.registerObjectMarshaller(FooType) {
+            it.toString()
+        }
+        ConvertersConfigurationHolder.setNamedConverterConfiguration(JSON.class, "fooType", fooTypeConfig)
+        Foo foo = new Foo(fooType: FooType.FOO)
+
+        when: 'convert to json AFTER new rest builder'
+        def rest = new RestBuilder()
+        def json2 = JSON.use('fooType') { [foo: foo] as JSON }
+
+        then:
+        json2.toString() == '{"foo":{"fooType":"FOO"}}'
+    }
+
+    @Issue("https://github.com/grails-plugins/grails-rest-client-builder/issues/34")
+    def "Test DefaultConverterConfiguration named as deep marshaling of object with new rest builder"() {
+        given: "an object with an enum and custom marshaller"
+        DefaultConverterConfiguration<JSON> fooTypeConfig = new DefaultConverterConfiguration<JSON>(ConvertersConfigurationHolder.getConverterConfiguration(JSON))
+        fooTypeConfig.registerObjectMarshaller(FooType) {
+            it.toString()
+        }
+        ConvertersConfigurationHolder.setNamedConverterConfiguration(JSON.class, "deep", fooTypeConfig)
+        Foo foo = new Foo(fooType: FooType.FOO)
+
+        when: 'convert to json AFTER new rest builder'
+        def rest = new RestBuilder()
+        def json2 = JSON.use('deep') { [foo: foo] as JSON }
+
+        then:
+        json2.toString() == '{"foo":{"fooType":"FOO"}}'
+    }
+
+    @Issue("https://github.com/grails-plugins/grails-rest-client-builder/issues/34")
+    def "Test set default marshalling of object with new rest builder"() {
+        given: "an object with an enum and custom marshaller"
+        DefaultConverterConfiguration<JSON> fooTypeConfig = new DefaultConverterConfiguration<JSON>(ConvertersConfigurationHolder.getConverterConfiguration(JSON))
+        fooTypeConfig.registerObjectMarshaller(FooType) {
+            it.toString()
+        }
+        ConvertersConfigurationHolder.setDefaultConfiguration(JSON.class, fooTypeConfig)
+        Foo foo = new Foo(fooType: FooType.FOO)
+
+        when: 'convert to json AFTER new rest builder'
+        def rest = new RestBuilder()
+        def json2 = [foo: foo] as JSON
+
+        then:
+        json2.toString() == '{"foo":{"fooType":"FOO"}}'
+    }
+
+    @Issue("https://github.com/grails-plugins/grails-rest-client-builder/issues/34")
+    def "Test setTheadLocalConverterConfiguration marshalling of object with new rest builder"() {
+        given: "an object with an enum and custom marshaller"
+        DefaultConverterConfiguration<JSON> fooTypeConfig = new DefaultConverterConfiguration<JSON>(ConvertersConfigurationHolder.getConverterConfiguration(JSON))
+        fooTypeConfig.registerObjectMarshaller(FooType) {
+            it.toString()
+        }
+        ConvertersConfigurationHolder.setTheadLocalConverterConfiguration(JSON.class, fooTypeConfig)
+        Foo foo = new Foo(fooType: FooType.FOO)
+
+        when: 'convert to json AFTER new rest builder'
+        def rest = new RestBuilder()
+        def json2 = [foo: foo] as JSON
 
         then:
         json2.toString() == '{"foo":{"fooType":"FOO"}}'
